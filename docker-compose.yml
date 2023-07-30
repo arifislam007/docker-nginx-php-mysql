@@ -1,0 +1,46 @@
+version: "3"
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "8080:80"
+    networks:
+      - internal
+    volumes:
+      - ./data/:/var/www/html
+      - /logs/nginx:/var/log/nginx/
+
+  php:
+    build:
+      context: .
+      dockerfile: php/Dockerfile
+      #image: php:fpm-alpine
+    networks:
+      - internal
+    volumes:
+      - ./data/:/var/www/html
+      - /logs/php.log:/var/log/fpm-php.www.log
+
+  mysql:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: Admin123
+      MYSQL_USER: demo
+      MYSQL_PASSWORD: demo123
+      MYSQL_DATABASE: demo
+    networks:
+      - internal
+    volumes:
+      - mysql_data:/var/lib
+      - ./dump.sql:/docker-entrypoint-initdb.d/schema.sql
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  mysql_data:
+
